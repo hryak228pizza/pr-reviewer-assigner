@@ -1,0 +1,24 @@
+run:
+  timeout: 5m
+
+linters:
+  enable:
+    - errcheck     
+    - gosimple     
+    - govet        
+    - ineffassign  
+    - staticcheck  
+    - typecheck    
+    - unused       
+    - gosec        
+    - gocritic     
+    - revive       
+
+linters-settings:
+  govet:
+    check-shadowing: true
+
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
