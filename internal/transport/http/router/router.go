@@ -1,13 +1,16 @@
+// Package router defines api routes and middleware
 package router
 
 import (
 	"net/http"
+
 	"github.com/hryak228pizza/pr-reviewer-assigner/internal/transport/http/handler"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
 
+// NewRouter initializes and configures the http router
 func NewRouter(teamHandler *handler.TeamHandler, userHandler *handler.UserHandler, prHandler *handler.PRHandler) http.Handler {
 	r := chi.NewRouter()
 
@@ -24,14 +27,14 @@ func NewRouter(teamHandler *handler.TeamHandler, userHandler *handler.UserHandle
 	})
 
 	r.Route("/users", func(r chi.Router) {
-		r.Post("/setIsActive", userHandler.SetIsActive) 
-		r.Get("/getReview", userHandler.GetReviews) 
+		r.Post("/setIsActive", userHandler.SetIsActive)
+		r.Get("/getReview", userHandler.GetReviews)
 	})
 
 	r.Route("/pullRequest", func(r chi.Router) {
-		r.Post("/create", prHandler.CreatePR)           
-		r.Post("/merge", prHandler.MergePR)             
-		r.Post("/reassign", prHandler.ReassignReviewer) 
+		r.Post("/create", prHandler.CreatePR)
+		r.Post("/merge", prHandler.MergePR)
+		r.Post("/reassign", prHandler.ReassignReviewer)
 	})
 
 	return r

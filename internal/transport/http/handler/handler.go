@@ -1,12 +1,15 @@
+// Package handler processes incoming http requests
 package handler
 
 import (
 	"encoding/json"
 	"errors"
 	"net/http"
+
 	"github.com/hryak228pizza/pr-reviewer-assigner/internal/domain/entity"
 )
 
+// ErrorResponse standardizes error response structure
 type ErrorResponse struct {
 	Error struct {
 		Code    string `json:"code"`
@@ -14,6 +17,7 @@ type ErrorResponse struct {
 	} `json:"error"`
 }
 
+// MapDomainErrorToHTTPCode translates domain errors to http status codes
 func MapDomainErrorToHTTPCode(err error) (int, string, string) {
 	if errors.Is(err, entity.ErrNotFound) {
 		return http.StatusNotFound, "NOT_FOUND", err.Error()
@@ -36,6 +40,7 @@ func MapDomainErrorToHTTPCode(err error) (int, string, string) {
 	return http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error"
 }
 
+// respondWithError sends a json formatted error response
 func respondWithError(w http.ResponseWriter, status int, code, message string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
@@ -53,6 +58,7 @@ func respondWithError(w http.ResponseWriter, status int, code, message string) {
 	_ = json.NewEncoder(w).Encode(resp)
 }
 
+// respondWithJSON sends a successful json response
 func respondWithJSON(w http.ResponseWriter, status int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)

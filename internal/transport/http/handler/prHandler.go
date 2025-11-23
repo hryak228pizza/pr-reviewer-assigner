@@ -1,9 +1,11 @@
+// Package handler processes incoming http requests
 package handler
 
 import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
+
 	"github.com/hryak228pizza/pr-reviewer-assigner/internal/domain/entity"
 	"github.com/hryak228pizza/pr-reviewer-assigner/internal/domain/services"
 )
@@ -12,6 +14,7 @@ type PRHandler struct {
 	prService services.PRService
 }
 
+// NewPRHandler creates a new instance of prhandler
 func NewPRHandler(prService services.PRService) *PRHandler {
 	return &PRHandler{prService: prService}
 }
@@ -31,13 +34,16 @@ type PRIDRequest struct {
 	PullRequestID string `json:"pull_request_id"`
 }
 
+// CreatePR processes request to create a new pull request
 func (h *PRHandler) CreatePR(w http.ResponseWriter, r *http.Request) {
 	var req CreatePRRequest
+	// decode request body
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		respondWithError(w, http.StatusBadRequest, "INVALID_INPUT", "Invalid JSON body")
 		return
 	}
 
+	// call service to create pr and assign reviewers
 	pr, err := h.prService.Create(r.Context(), req.PullRequestID, req.PullRequestName, req.AuthorID)
 
 	if err != nil {
@@ -50,6 +56,7 @@ func (h *PRHandler) CreatePR(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusCreated, map[string]interface{}{"pr": pr})
 }
 
+// MergePR handles request to mark a pr as merged
 func (h *PRHandler) MergePR(w http.ResponseWriter, r *http.Request) {
 	var req PRIDRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -57,6 +64,7 @@ func (h *PRHandler) MergePR(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// update pr status in service
 	pr, err := h.prService.Merge(r.Context(), req.PullRequestID)
 
 	if err != nil {
@@ -69,6 +77,7 @@ func (h *PRHandler) MergePR(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, pr)
 }
 
+// ReassignReviewer processes request to change a reviewer
 func (h *PRHandler) ReassignReviewer(w http.ResponseWriter, r *http.Request) {
 	var req ReassignReviewerRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -76,6 +85,7 @@ func (h *PRHandler) ReassignReviewer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// find new reviewer and replace the old one
 	pr, newReviewerID, err := h.prService.Reassign(r.Context(), req.PullRequestID, req.OldReviewerID)
 
 	if err != nil {

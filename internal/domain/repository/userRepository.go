@@ -1,7 +1,9 @@
+// Package repository handles data persistence and retrieval
 package repository
 
 import (
 	"context"
+
 	"github.com/hryak228pizza/pr-reviewer-assigner/internal/domain/entity"
 )
 

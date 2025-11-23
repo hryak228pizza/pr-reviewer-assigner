@@ -1,3 +1,4 @@
+// Package repository handles data persistence and retrieval
 package repository
 
 import (
@@ -11,21 +12,26 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+// TeamRepository manages team-related database operations
 type TeamRepository struct {
 	trm *postgres.TransactionManager
 }
 
+// NewTeamRepository creates new team repository instance
 func NewTeamRepository(trm *postgres.TransactionManager) *TeamRepository {
 	return &TeamRepository{trm: trm}
 }
 
+// check for interface implementation
 var _ repository.TeamRepository = (*TeamRepository)(nil)
 
+// Create creates a new team and optionally inserts members
 func (r *TeamRepository) Create(ctx context.Context, team *entity.Team, users []*entity.User) error {
 	queryer := r.trm.GetQueryer(ctx)
 
 	teamQuery := `INSERT INTO teams (name) VALUES ($1) ON CONFLICT (name) DO NOTHING`
 
+	// insert team if not exists
 	teamTag, err := queryer.Exec(ctx, teamQuery, team.Name)
 	if err != nil {
 		return fmt.Errorf("TeamRepo.Create (team insert): %w", err)
@@ -35,6 +41,7 @@ func (r *TeamRepository) Create(ctx context.Context, team *entity.Team, users []
 		return entity.ErrTeamExists
 	}
 
+	// insert initial team members using batch
 	if len(users) > 0 {
 		batch := &pgx.Batch{}
 		userQuery := `INSERT INTO users (id, username, team_name, is_active) VALUES ($1, $2, $3, $4)`
@@ -61,6 +68,7 @@ func (r *TeamRepository) Create(ctx context.Context, team *entity.Team, users []
 	return nil
 }
 
+// GetByName retrieves team details by name
 func (r *TeamRepository) GetByName(ctx context.Context, name string) (*entity.Team, error) {
 	queryer := r.trm.GetQueryer(ctx)
 

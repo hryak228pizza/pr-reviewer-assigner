@@ -1,3 +1,4 @@
+// package handler processes incoming http requests
 package handler
 
 import (
@@ -22,18 +23,22 @@ type TeamHandler struct {
 	teamService services.TeamService
 }
 
+// NewTeamHandler creates a new team handler instance
 func NewTeamHandler(service services.TeamService) *TeamHandler {
 	return &TeamHandler{teamService: service}
 }
 
+// AddTeam processes request to create a team and its members
 func (h *TeamHandler) AddTeam(w http.ResponseWriter, r *http.Request) {
 	var req AddTeamRequest
 
+	// parse json body
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		respondWithError(w, http.StatusBadRequest, "INVALID_INPUT", "Invalid JSON body")
 		return
 	}
 
+	// map request data to domain entities
 	teamEntity := &entity.Team{Name: req.TeamName}
 	var userEntities []*entity.User
 	for _, m := range req.Members {
@@ -45,6 +50,7 @@ func (h *TeamHandler) AddTeam(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
+	// delegate creation to service
 	err := h.teamService.CreateTeamWithUsers(r.Context(), teamEntity, userEntities)
 
 	if err != nil {
