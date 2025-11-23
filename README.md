@@ -71,7 +71,11 @@ curl http://localhost:8080/health
 # Просмотр логов
 make logs
 ```
-5. Остановка
+5. Посмотреть статистику
+```bash
+curl http://localhost:8080/stats 
+```
+6. Остановка
 ```bash
 make down
 ```
